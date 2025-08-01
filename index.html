@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      width: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    canvas {
+      display: block;
+      /* border: 1px solid white; */
+    }
+  </style>
+</head>
+<body>
+    <script>
+        function get_seed() {
+            return Math.floor(Math.random() * 4294967296);
+        }
+    </script>
+    <script type="module">
+        import init from './snake.js';
+
+        init().catch((error) => {
+            if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
+            throw error;
+            }
+        });
+
+        const observer = new MutationObserver(() => {
+            const canvas = document.querySelector('canvas');
+            if (canvas) {
+            canvas.style.maxWidth  = "100%";
+            canvas.style.maxHeight = "100%";
+            observer.disconnect();
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
+</body>
+</html>
