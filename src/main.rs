@@ -1,7 +1,11 @@
 use std::time::Duration;
 use bevy::{prelude::*, window::PrimaryWindow, render::camera::SubCameraView, time::common_conditions::on_timer};
 use once_cell::sync::Lazy;
+#[cfg(not(target_arch = "wasm32"))]
+use rand::{Rng, rngs::ThreadRng};
+#[cfg(target_arch = "wasm32")]
 use rand::{rngs::SmallRng, Rng, SeedableRng};
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::wasm_bindgen;
 
 const WINDOW_WIDTH: f32 = 500.;
@@ -14,6 +18,12 @@ const SNAKE_SEGMENT_COLOR:  Srgba = Srgba::rgb(0.3, 0.3, 0.3);
 const ARENA_WIDTH: u32 = 10;
 const ARENA_HEIGHT: u32 = 10;
 
+//
+// Javascript側で定義した関数を使えるようにする
+// ※ WASMではランダムなシード値を作れないためJavascript側の力を借りる
+//    参考: https://ja.stackoverflow.com/questions/54143/wasm%E3%81%A7%E3%83%A9%E3%83%B3%E3%83%80%E3%83%A0%E3%81%AA%E5%80%A4%E3%82%92%E5%8F%96%E5%BE%97%E3%81%97%E3%81%9F%E3%81%84
+//
+#[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
 extern "C" {
     fn get_seed() -> u32;
@@ -92,6 +102,20 @@ struct LastTailPosition(Option<Position>);
 #[derive(Event)]
 struct GameOverEvent;
 
+#[cfg(target_arch = "wasm32")]
+pub fn get_rng() -> SmallRng {
+    #[allow(unused_unsafe)]
+    SmallRng::seed_from_u64(unsafe { get_seed() } as u64)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn get_rng() -> ThreadRng {
+     rand::rng()
+}
+
+//
+//  カメラセットアップ
+//
 fn setup_camera(mut commands: Commands) {
     let bundle = (
         Camera2d,
@@ -138,9 +162,6 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
 // フードを出現させる
 //
 fn spawn_food(mut commands: Commands) {
-    #[allow(unused_unsafe)]
-    let rng = SmallRng::seed_from_u64( unsafe { get_seed() } as u64 );
-
     let arena_width = ARENA_WIDTH as i32;
     let arena_height = ARENA_HEIGHT as i32;
     let bundle = (
@@ -151,8 +172,8 @@ fn spawn_food(mut commands: Commands) {
             ..default()
         },
         Position {
-            x: rng.clone().random_range(0..arena_width),
-            y: rng.clone().random_range(0..arena_height),
+            x: get_rng().random_range(0..arena_width),
+            y: get_rng().random_range(0..arena_height),
         },
         Size::square(0.8),
         Food

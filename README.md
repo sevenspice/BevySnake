@@ -1,8 +1,20 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/e2572855-11b7-4b3c-a640-60e1278a7da8/deploy-status)](https://app.netlify.com/projects/roaring-haupia-17e1e3/deploys)
+
 # 概要
 
 - []()
 
 # ビルド方法
+``` bash
+cargo build
+```
+
+## 実行
+```bash
+cargo run
+```
+
+# ビルド方法(WASM)
 
 ## 参考
 
@@ -21,6 +33,9 @@ cargo install wasm-bindgen-cli
 cargo build --release --target wasm32-unknown-unknown
 wasm-bindgen --no-typescript --target web --out-dir ./ --out-name "snake" ./target/wasm32-unknown-unknown/release/bevy_snake.wasm
 ```
+
+## 実行
+
 ``` bash
 cargo +nightly install miniserve
 miniserve ./ --index index.html
